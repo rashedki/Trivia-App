@@ -100,8 +100,8 @@ def create_app(test_config=None):
               'questions': current_questions,
               'total_questions': len(Question.query.all())
           })
-     except :
-        abort(422)
+      except:
+         abort(422)
   '''
   @TODO:
   Create an endpoint to POST a new question,
@@ -112,6 +112,30 @@ def create_app(test_config=None):
   the form will clear and the question will appear at the end of the last page
   of the questions list in the "List" tab.
   '''
+  @app.route('/questions/<int:book_id>', methods=['POST'])
+  def create_question():
+      body = request.get_json()
+
+      new_question   = body.get('question', None)
+      new_answer     = body.get('answer', None)
+      new_difficulty = body.get('difficulty', None)
+      new_category   = body.get('category', None)
+
+      try:
+          question = Question(question=new_question, answer=new_answer, difficulty=new_difficulty, category=new_category)
+          question.insert()
+
+          selection = Question.query.order_by(Question.id).all()
+          current_questions = paginate_questions(request, selection)
+
+          return jsonify({
+              'success': True,
+              'created': question_id,
+              'questions': current_questions,
+              'total_questions': len(Question.query.all())
+          })
+      except:
+          abort(422)
 
   '''
   @TODO:
