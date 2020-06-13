@@ -228,5 +228,20 @@ def create_app(test_config=None):
   Create error handlers for all expected errors
   including 404 and 422.
   '''
+  @app.errorhandler(404)
+      def not_found():
+          return jsonify({
+              'success': False,
+              'error': 404,
+              'message': 'resource not found'
+          })
+
+  @app.errorhandler(422)
+      def not_found():
+          return jsonify({
+              'success': False,
+              'error': 422,
+              'message': 'unprocessable'
+          })
 
   return app
