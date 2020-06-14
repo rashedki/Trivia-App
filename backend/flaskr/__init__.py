@@ -90,21 +90,21 @@ def create_app(test_config=None):
   '''
   @app.route('/questions/<int:question_id>', methods=['DELETE'])
   def delete_question(question_id):
-      body = request.get_json()
-
       try:
-          question = Question.query.firlter(Question.id == question_id).one_or_none()
+          question = Question.query.filter(Question.id == question_id).one_or_none()
           if question is None:
               abort(404)
+
           question.delete()
-          selection = Question.query.order_by(Question.id).all()
+
+          selection = Question.query.order_by('id').all()
           current_questions = paginate_questions(request, selection)
 
           return jsonify({
               'success': True,
               'deleted': question_id,
-              'questions': current_questions,
-              'total_questions': len(Question.query.all())
+              #'questions': current_questions,
+              'total_questions': len(selection)
           })
       except:
          abort(422)
@@ -132,7 +132,6 @@ def create_app(test_config=None):
           question.insert()
 
           selection = Question.query.order_by('id').all()
-
 
           return jsonify({
               'success': True,
