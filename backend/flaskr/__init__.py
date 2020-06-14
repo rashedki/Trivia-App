@@ -34,11 +34,8 @@ def create_app(test_config=None):
   # can I remove , methods=["GET"] as the GET methods already set by default?
   @app.route('/categories', methods=['GET'])
   def get_categories():
-      page = request.args.get('page', 1, type=int)
-      start = (page -1) * 10
-      end   = start + 10
       categories = Category.query.all()
-      formatted_categories = [category.format() for category in categories]
+      formatted_categories = {category.id: category.type for category in categories}
       return jsonify({
           'success': True,
           'categories': formatted_categories[start:end],
@@ -60,13 +57,13 @@ def create_app(test_config=None):
   @app.route('/questions')
   def get_questions():
       page = request.args.get('page', 1, type=int)
-      start = (page-1) * 10
-      end = start + 10
+      start = (page-1) * QUESTIONS_PER_PAGE
+      end = start + QUESTIONS_PER_PAGE
       questions = Question.query.all()
       formatted_questions = [question.format() for question in questions]
 
       categories = Category.query.all()
-      formatted_categories = [category.format() for category in categories]
+      formatted_categories = {category.id: category.type for category in categories}
 
       return jsonify({
           'success': True,
@@ -189,8 +186,7 @@ def create_app(test_config=None):
               'questions': formatted_questions,
               'total_questions': len(formatted_questions)
           })
-
-        except:
+      except:
              abort(422)
 
   '''
@@ -229,19 +225,19 @@ def create_app(test_config=None):
   including 404 and 422.
   '''
   @app.errorhandler(404)
-      def not_found():
-          return jsonify({
-              'success': False,
-              'error': 404,
-              'message': 'resource not found'
-          })
+  def not_found():
+      return jsonify({
+          'success': False,
+          'error': 404,
+          'message': 'resource not found'
+      })
 
   @app.errorhandler(422)
-      def not_found():
-          return jsonify({
-              'success': False,
-              'error': 422,
-              'message': 'unprocessable'
-          })
+  def not_found():
+      return jsonify({
+          'success': False,
+          'error': 422,
+          'message': 'unprocessable'
+      })
 
   return app
