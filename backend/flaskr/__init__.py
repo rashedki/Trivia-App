@@ -13,6 +13,15 @@ def create_app(test_config=None):
   app = Flask(__name__)
   setup_db(app)
 
+  def paginate_questions(request, selection):
+      page  = request.args.get('page', 1, type=int)
+      start = (page - 1) * QUESTIONS_PER_PAGE
+      end   = start - QUESTIONS_PER_PAGE
+
+      questions = [question.format() for question in selection]
+      current_questions = questions[start:end]
+
+      return current_questions
 
   '''
   @TODO: Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
@@ -109,7 +118,7 @@ def create_app(test_config=None):
   the form will clear and the question will appear at the end of the last page
   of the questions list in the "List" tab.
   '''
-  @app.route('/questions/<int:book_id>', methods=['POST'])
+  @app.route('/questions', methods=['POST'])
   def create_question():
       body = request.get_json()
 
@@ -122,14 +131,15 @@ def create_app(test_config=None):
           question = Question(question=new_question, answer=new_answer, difficulty=new_difficulty, category=new_category)
           question.insert()
 
-          selection = Question.query.order_by(Question.id).all()
-          current_questions = paginate_questions(request, selection)
+          selection = Question.query.order_by('id').all()
+
 
           return jsonify({
               'success': True,
-              'created': question_id,
-              'questions': current_questions,
-              'total_questions': len(Question.query.all())
+              # 'created': id,
+              # 'questions': new_question,
+              #'questions': question.format(),
+              'total_questions': len(selection)
           })
       except:
           abort(422)
