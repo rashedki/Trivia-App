@@ -8,20 +8,22 @@ from models import setup_db, Question, Category
 
 QUESTIONS_PER_PAGE = 10
 
+def paginate_questions(request, selection):
+    page  = request.args.get('page', 1, type=int)
+    start = (page - 1) * QUESTIONS_PER_PAGE
+    end   = start + QUESTIONS_PER_PAGE
+
+    questions = [question.format() for question in selection]
+    current_questions = questions[start:end]
+
+    return current_questions
+
 def create_app(test_config=None):
   # create and configure the app
   app = Flask(__name__)
   setup_db(app)
 
-  def paginate_questions(request, selection):
-      page  = request.args.get('page', 1, type=int)
-      start = (page - 1) * QUESTIONS_PER_PAGE
-      end   = start - QUESTIONS_PER_PAGE
 
-      questions = [question.format() for question in selection]
-      current_questions = questions[start:end]
-
-      return current_questions
 
   '''
   @TODO: Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
@@ -65,19 +67,19 @@ def create_app(test_config=None):
   '''
   @app.route('/questions')
   def get_questions():
-      page = request.args.get('page', 1, type=int)
-      start = (page-1) * QUESTIONS_PER_PAGE
-      end = start + QUESTIONS_PER_PAGE
-      questions = Question.query.all()
-      formatted_questions = [question.format() for question in questions]
+      selection = Question.query.order_by(Question.id).all()
+      current_questions = paginate_questions(request, selection)
 
       categories = Category.query.all()
       formatted_categories = {category.id: category.type for category in categories}
 
+      if len(current_questions) == 0:
+          abort(404)
+
       return jsonify({
           'success': True,
-          'questions': formatted_questions[start:end],
-          'total_questions': len(formatted_questions),
+          'questions': current_questions,
+          'total_questions': len(selection),
           'categories': formatted_categories,
           'current_category': None
       })
@@ -181,22 +183,37 @@ def create_app(test_config=None):
   '''
   @app.route('/categories/<int:category_id>/questions', methods=['GET'])
   def get_questions_by_category(category_id):
-      try:
-          questions = Question.query.filter(
-              Question.category == category_id).all()
+      # try:
+      #     questions = Question.query.filter(
+      #         Question.category == category_id).all()
+      #
+      #     if(questions is None):
+      #         abort(404)
+      #
+      #     formatted_questions = [question.format() for question in questions]
+      #     current_category = Category.query.get(category_id)
+      #     return jsonify({
+      #         'success': True,
+      #         'questions': formatted_questions,
+      #         'total_questions': len(formatted_questions),
+      #         'current_category': current_category.format()
+      #     })
+      # except:
+      #        abort(422)
 
-          if(questions is None):
-              abort(404)
+    try:
+        selected_category = Category.query.get(category_id)
+        questions = Question.query.filter(Question.category == category_id).order_by(Question.id).all()
+        current_questions = paginate_questions(request, questions)
 
-          formatted_questions = [question.format() for question in questions]
-
-          return jsonify({
-              'success': True,
-              'questions': formatted_questions,
-              'total_questions': len(formatted_questions)
-          })
-      except:
-             abort(422)
+        return jsonify({
+            'success': True,
+            'questions': current_questions,
+            'current_category': selected_category.format(),
+            'total_questions': len(questions)
+        })
+    except:
+        abort(422)
 
   '''
   @TODO:
