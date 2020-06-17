@@ -266,4 +266,12 @@ def create_app(test_config=None):
           'message': 'unprocessable'
       }), 422
 
+  @app.errorhandler(405)
+  def not_allowed(error):
+      return jsonify({
+          "success": False,
+          "error": 405,
+          "message": "method not allowed"
+      }), 405
+
   return app
