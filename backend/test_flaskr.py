@@ -107,7 +107,17 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(data['total_questions'])
         self.assertTrue(len(data['questions']))
 
+    def test_search_not_exist_question_(self):
+        res = self.client().post('/questions/search',
+                                 json={"searchTerm": "axasdad"})
+        data = json.loads(res.data)
 
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['total_questions'], 0)
+        self.assertFalse(len(data['questions']))
+
+    
 
 # Make the tests conveniently executable
 if __name__ == "__main__":
