@@ -183,24 +183,6 @@ def create_app(test_config=None):
   '''
   @app.route('/categories/<int:category_id>/questions', methods=['GET'])
   def get_questions_by_category(category_id):
-      # try:
-      #     questions = Question.query.filter(
-      #         Question.category == category_id).all()
-      #
-      #     if(questions is None):
-      #         abort(404)
-      #
-      #     formatted_questions = [question.format() for question in questions]
-      #     current_category = Category.query.get(category_id)
-      #     return jsonify({
-      #         'success': True,
-      #         'questions': formatted_questions,
-      #         'total_questions': len(formatted_questions),
-      #         'current_category': current_category.format()
-      #     })
-      # except:
-      #        abort(422)
-
     try:
         selected_category = Category.query.get(category_id)
         questions = Question.query.filter(Question.category == category_id).order_by(Question.id).all()
@@ -271,9 +253,17 @@ def create_app(test_config=None):
   @app.errorhandler(405)
   def not_allowed(error):
       return jsonify({
-          "success": False,
-          "error": 405,
-          "message": "method not allowed"
+          'success': False,
+          'error': 405,
+          'message': "method not allowed"
       }), 405
+
+  @app.errorhandler(400)
+  def bad_request(error):
+      return jsonify({
+          'success': False,
+          'error': 400,
+          'message': "bad request"
+      }), 400
 
   return app
