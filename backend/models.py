@@ -5,7 +5,7 @@ import json
 
 #This is another way to connect to the db
 database_name = "trivia"
-database_path = "postgres://{}:{}@{}/{}".format('postgres', 'khalil', 'localhost:5432', database_name)
+database_path = "postgresql://{}:{}@{}/{}".format('postgres', 'khalil', 'localhost:5432', database_name)
 
 db = SQLAlchemy()
 
